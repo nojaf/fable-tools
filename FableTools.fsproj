@@ -1,0 +1,51 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <!--Avalonia doesen't support TrimMode=link currently,but we are working on that https://github.com/AvaloniaUI/Avalonia/issues/6892 -->
+    <TrimMode>copyused</TrimMode>
+    <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+    <NoWarn>$(NoWarn);FS0075</NoWarn>
+    <OtherFlags>$(OtherFlags) --parallelreferenceresolution --test:GraphBasedChecking --test:ParallelOptimization --test:ParallelIlxGen --strict-indentation+</OtherFlags>
+  </PropertyGroup>
+  <ItemGroup>
+    <!--This helps with theme dll-s trimming.
+    If you will publish your application in self-contained mode with p:PublishTrimmed=true and it will use Fluent theme Default theme will be trimmed from the output and vice versa.
+    https://github.com/AvaloniaUI/Avalonia/issues/5593 -->
+    <TrimmableAssembly Include="Avalonia.Themes.Fluent"/>
+    <TrimmableAssembly Include="Avalonia.Themes.Default"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <AvaloniaResource Include="App.xaml"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="ExpandedAST.fsi"/>
+    <Compile Include="ExpandedAST.fs"/>
+    <Compile Include="TextEditor.fs"/>
+    <Compile Include="App.fs"/>
+    <Compile Include="Program.fs"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="../Fable/lib/fcs/FSharp.Core.dll"/>
+    <Reference Include="../Fable/lib/fcs/FSharp.Compiler.Service.dll"/>
+    <ProjectReference Include="../Fable/src/Fable.Transforms/Fable.Transforms.fsproj"/>
+    <ProjectReference Include="..\Fable\src\Fable.Compiler\Fable.Compiler.fsproj"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Fantomas.Core" Version="6.3.0-alpha-007"/>
+    <PackageReference Include="Fabulous" Version="2.4.1"/>
+    <PackageReference Include="Fabulous.Avalonia" Version="2.3.0"/>
+    <PackageReference Include="TextMateSharp.Grammars" Version="1.0.56"/>
+    <PackageReference Include="Avalonia.AvaloniaEdit" Version="11.0.6"/>
+    <PackageReference Include="AvaloniaEdit.TextMate" Version="11.0.6"/>
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.0.7"/>
+    <PackageReference Include="Avalonia.Desktop" Version="11.0.7"/>
+  </ItemGroup>
+
+</Project>
