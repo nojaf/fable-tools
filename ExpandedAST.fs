@@ -8,27 +8,27 @@ open Fantomas.Core
 open Fantomas.Core.SyntaxOak
 
 let zeroRange = Range.Zero
-let stn v = SingleTextNode (v, zeroRange)
+let stn v = SingleTextNode(v, zeroRange)
 
 let identList values =
     match values with
-    | [] -> IdentListNode ([], zeroRange)
-    | [ singleValue ] -> IdentListNode ([ IdentifierOrDot.Ident (stn singleValue) ], zeroRange)
+    | [] -> IdentListNode([], zeroRange)
+    | [ singleValue ] -> IdentListNode([ IdentifierOrDot.Ident(stn singleValue) ], zeroRange)
     | head :: tail ->
         let content =
             [
-                yield IdentifierOrDot.Ident (stn head)
+                yield IdentifierOrDot.Ident(stn head)
                 for t in tail do
                     yield IdentifierOrDot.UnknownDot
-                    yield IdentifierOrDot.Ident (stn t)
+                    yield IdentifierOrDot.Ident(stn t)
             ]
 
-        IdentListNode (content, zeroRange)
+        IdentListNode(content, zeroRange)
 
-let wrapInQuotes s = String.Concat ("\"", s, "\"")
+let wrapInQuotes s = String.Concat("\"", s, "\"")
 
 let mkConstExpr v =
-    SingleTextNode (v, zeroRange) |> Constant.FromText |> Expr.Constant
+    SingleTextNode(v, zeroRange) |> Constant.FromText |> Expr.Constant
 
 let mkStringExpr v = wrapInQuotes v |> mkConstExpr
 
@@ -41,42 +41,41 @@ let mkExprTuple xs =
             [
                 yield Choice1Of2 head
                 for t in tail do
-                    yield Choice2Of2 (stn ",")
+                    yield Choice2Of2(stn ",")
                     yield Choice1Of2 t
             ]
 
-        ExprTupleNode (content, zeroRange) |> Expr.Tuple
+        ExprTupleNode(content, zeroRange) |> Expr.Tuple
 
 let mkExprParen e =
-    ExprParenNode (stn "(", e, stn ")", zeroRange) |> Expr.Paren
+    ExprParenNode(stn "(", e, stn ")", zeroRange) |> Expr.Paren
 
 let mkInfix leftExpr operatorName rightExpr =
-    ExprInfixAppNode (leftExpr, stn operatorName, rightExpr, zeroRange)
+    ExprInfixAppNode(leftExpr, stn operatorName, rightExpr, zeroRange)
     |> Expr.InfixApp
 
 let mkArrayExpr elements =
-    ExprArrayOrListNode (stn "[|", elements, stn "|]", zeroRange)
-    |> Expr.ArrayOrList
+    ExprArrayOrListNode(stn "[|", elements, stn "|]", zeroRange) |> Expr.ArrayOrList
 
 let mkListExpr elements =
-    ExprArrayOrListNode (stn "[", elements, stn "]", zeroRange) |> Expr.ArrayOrList
+    ExprArrayOrListNode(stn "[", elements, stn "]", zeroRange) |> Expr.ArrayOrList
 
 let mkExprOptVarNode name =
-    ExprOptVarNode (false, name, zeroRange) |> Expr.OptVar
+    ExprOptVarNode(false, name, zeroRange) |> Expr.OptVar
 
-let mkExprIdent v = Expr.Ident (stn v)
+let mkExprIdent v = Expr.Ident(stn v)
 
 let _mkExprAppSingleParenArgNode functionName argExpr =
-    ExprAppSingleParenArgNode (mkExprIdent functionName, argExpr, zeroRange)
+    ExprAppSingleParenArgNode(mkExprIdent functionName, argExpr, zeroRange)
     |> Expr.AppSingleParenArg
 
 let rec map (value : obj) : Expr =
     if isNull value then
         // Assume `null` is an empty option in our case
-        Expr.Ident (stn "None")
+        Expr.Ident(stn "None")
     else
 
-    let t = value.GetType ()
+    let t = value.GetType()
 
     if FSharpType.IsUnion t then
         mapUnion value t
@@ -91,32 +90,27 @@ let rec map (value : obj) : Expr =
 
         let recordFields =
             fieldDefs
-            |> Array.map (fun rf ->
-                RecordFieldNode (
-                    identList [ rf.Name ],
-                    stn "=",
-                    map (FSharpValue.GetRecordField (value, rf)),
-                    zeroRange
-                )
+            |> Array.map(fun rf ->
+                RecordFieldNode(identList [ rf.Name ], stn "=", map(FSharpValue.GetRecordField(value, rf)), zeroRange)
             )
             |> Array.toList
 
-        ExprRecordNode (stn "{", None, recordFields, stn "}", zeroRange) |> Expr.Record
+        ExprRecordNode(stn "{", None, recordFields, stn "}", zeroRange) |> Expr.Record
     elif t.IsEnum then
         $"%s{t.Name}.%A{value}" |> mkConstExpr
     elif t.Name = "FSharpSet`1" then
-        ExprAppNode (mkConstExpr "set", [ mapList value ], zeroRange) |> Expr.App
+        ExprAppNode(mkConstExpr "set", [ mapList value ], zeroRange) |> Expr.App
     else
 
     match value with
     | :? string as s -> wrapInQuotes s |> mkConstExpr
-    | :? bool as b -> mkConstExpr (if b then "true" else "false")
-    | :? int32 as i -> mkConstExpr (string i)
+    | :? bool as b -> mkConstExpr(if b then "true" else "false")
+    | :? int32 as i -> mkConstExpr(string i)
     | :? IEnumerable<obj> as seqValue -> seqValue |> Seq.toList |> List.map map |> mkListExpr
     | _ -> mkConstExpr $"%A{value}"
 
 and mapUnion (value : obj) (t : System.Type) : Expr =
-    let caseInfo, caseFields = FSharpValue.GetUnionFields (value, t)
+    let caseInfo, caseFields = FSharpValue.GetUnionFields(value, t)
 
     if caseInfo.DeclaringType.Name = "FSharpList`1" then
         mapList value
@@ -138,16 +132,16 @@ and mapUnion (value : obj) (t : System.Type) : Expr =
         if caseFields.Length = 1 then
             map caseFields.[0] |> mkExprParen
         else
-            let fields = caseInfo.GetFields ()
+            let fields = caseInfo.GetFields()
 
             (fields, caseFields)
             ||> Array.zip
-            |> Array.map (fun (field, fieldValue) -> mkInfix (mkConstExpr field.Name) "=" (map fieldValue))
+            |> Array.map(fun (field, fieldValue) -> mkInfix (mkConstExpr field.Name) "=" (map fieldValue))
             |> Array.toList
             |> mkExprTuple
             |> mkExprParen
 
-    ExprAppLongIdentAndSingleParenArgNode (caseName, arg, zeroRange)
+    ExprAppLongIdentAndSingleParenArgNode(caseName, arg, zeroRange)
     |> Expr.AppLongIdentAndSingleParenArg
 
 and mapList (value : obj) =
@@ -157,7 +151,7 @@ and mapList (value : obj) =
         mkListExpr
             [
                 for item in enumerable do
-                    map (box item)
+                    map(box item)
             ]
     | _ -> failwithf $"Excepted %A{value} to implement IEnumerable"
 
@@ -169,32 +163,32 @@ let getExpandedAST (ast : Fable.AST.Fable.File) : string =
         |> Set.toList
         |> List.map mkStringExpr
         |> mkArrayExpr
-        |> fun set -> ExprAppNode (mkExprIdent "set", [ set ], zeroRange)
+        |> fun set -> ExprAppNode(mkExprIdent "set", [ set ], zeroRange)
         |> Expr.App
 
     let fileCtor =
-        ExprAppLongIdentAndSingleParenArgNode (
-            IdentListNode (
+        ExprAppLongIdentAndSingleParenArgNode(
+            IdentListNode(
                 [
-                    IdentifierOrDot.Ident (stn "Fable")
+                    IdentifierOrDot.Ident(stn "Fable")
                     IdentifierOrDot.UnknownDot
-                    IdentifierOrDot.Ident (stn "AST")
+                    IdentifierOrDot.Ident(stn "AST")
                     IdentifierOrDot.UnknownDot
-                    IdentifierOrDot.Ident (stn "Fable")
+                    IdentifierOrDot.Ident(stn "Fable")
                     IdentifierOrDot.UnknownDot
-                    IdentifierOrDot.Ident (stn "File")
+                    IdentifierOrDot.Ident(stn "File")
                 ],
                 zeroRange
             ),
-            mkExprParen (mkExprTuple [ mkListExpr decls ; set ]),
+            mkExprParen(mkExprTuple [ mkListExpr decls ; set ]),
             zeroRange
         )
         |> Expr.AppLongIdentAndSingleParenArg
 
     let oak =
-        Oak ([], [ ModuleOrNamespaceNode (None, [ ModuleDecl.DeclExpr fileCtor ], zeroRange) ], zeroRange)
+        Oak([], [ ModuleOrNamespaceNode(None, [ ModuleDecl.DeclExpr fileCtor ], zeroRange) ], zeroRange)
 
-    CodeFormatter.FormatOakAsync (
+    CodeFormatter.FormatOakAsync(
         oak,
         { FormatConfig.Default with
             MultilineBracketStyle = Stroustrup

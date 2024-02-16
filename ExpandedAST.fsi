@@ -1,5 +1,5 @@
 module FableTools.ExpandedAST
 
-open  Fable.AST.Fable
+open Fable.AST.Fable
 
-val getExpandedAST: ast: File -> string
+val getExpandedAST : ast : File -> string

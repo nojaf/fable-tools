@@ -7,7 +7,8 @@ end_of_line = lf
 indent_size = 2
 
 [*.{fs,fsi,fsx}]
-fsharp_space_before_uppercase_invocation = true
+fsharp_space_before_uppercase_invocation = false
+fsharp_space_before_lowercase_invocation = false
 fsharp_space_before_member = true
 fsharp_space_before_colon = true
 fsharp_space_before_semicolon = true
