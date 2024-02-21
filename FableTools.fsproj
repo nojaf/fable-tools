@@ -25,21 +25,15 @@
   <ItemGroup>
     <Compile Include="ExpandedAST.fsi"/>
     <Compile Include="ExpandedAST.fs"/>
-    <Compile Include="Service.fsi" />
-    <Compile Include="Service.fs" />
+    <Compile Include="Service.fsi"/>
+    <Compile Include="Service.fs"/>
     <Compile Include="TextEditor.fs"/>
     <Compile Include="App.fs"/>
     <Compile Include="Program.fs"/>
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="../Fable/lib/fcs/FSharp.Core.dll"/>
-    <Reference Include="../Fable/lib/fcs/FSharp.Compiler.Service.dll"/>
-    <ProjectReference Include="../Fable/src/Fable.Transforms/Fable.Transforms.fsproj"/>
-    <ProjectReference Include="..\Fable\src\Fable.Compiler\Fable.Compiler.fsproj"/>
-  </ItemGroup>
-
-  <ItemGroup>
+    <PackageReference Include="Fable.Compiler" Version="4.0.0-alpha-007"/>
     <PackageReference Include="Fantomas.Core" Version="6.3.0-alpha-007"/>
     <PackageReference Include="Fabulous" Version="2.4.1"/>
     <PackageReference Include="Fabulous.Avalonia" Version="2.3.0"/>

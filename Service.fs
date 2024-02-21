@@ -28,7 +28,7 @@ module Service =
                 PrecompiledLib = None
                 PrintAst = false
                 // I don't think this actually has to exists on disk for this tool.
-                FableLibraryPath = Some(Path.Combine(fsproj.DirectoryName, "node_modules/fable-library"))
+                FableLibraryPath = Some(Path.Combine(fsproj.DirectoryName, "node_modules/@fable-org/fable-library-js"))
                 Configuration = configuration
                 NoRestore = false
                 NoCache = true
